@@ -1,11 +1,16 @@
-#pragma once
+#ifndef SESSION_H
+#define SESSION_H
 
+
+#include "Message.h"
 class Session
 {
 public:
 	int id;
 	string name;// опциональное имя при старте
 	queue<Message> messages;
+	long long lastInteractionTime;
+	bool isConnected = false;
 
 	CCriticalSection cs; //во время чтения сообщения из очереди НИКТО не писал сообщение
 	Session(int _id, string _name)
@@ -29,9 +34,13 @@ public:
 		else
 		{
 			Message m = messages.front();
+			string dataFromQueue = "Message from [" + to_string(m.header.from) + "]: " + m.data;
+			m.data = dataFromQueue;
+			m.header.size = dataFromQueue.size();
 			m.send(s);
 			messages.pop();
 		}
+
 	}
 };
-
+#endif

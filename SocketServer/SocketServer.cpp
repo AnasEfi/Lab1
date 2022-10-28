@@ -1,58 +1,69 @@
- // SocketServer.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// SocketServer.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include "pch.h"
 #include "framework.h"
 #include "SocketServer.h"
-#include "Message.h"
-#include "Session.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-void LaunchClient()
+SocketServer::SocketServer()
 {
-	STARTUPINFO si = { sizeof(si) };
-	PROCESS_INFORMATION pi;
-	CreateProcess(NULL, (LPSTR)"SocketClient.exe", NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
+
 }
 
-int maxID = MR_USER;
-map<int, shared_ptr<Session>> sessions;
+long long SocketServer::GetTimeData()
+{
+	return std::time(nullptr);
+}
 
-void ProcessClient(SOCKET hSock)
+void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 {
 	CSocket s;
 	s.Attach(hSock);
 
 	Message m;
-	int code = Message::Receive(s, m);
-	//
+	int code = m.receive(s); //return header.type
 
-	//int code = m.receive(s); //return header.type
 	cout << m.header.to << ": " << m.header.from << ": " << m.header.type << ": " << code << endl;
+
+	auto iSessionFrom = server->sessions.find(m.header.from);
+	if (iSessionFrom != server->sessions.end())
+	{
+		if (iSessionFrom->second->isConnected == false && code != MT_INIT && code != MT_GETDATA && code != MT_EXIT)
+		{
+			return;
+		}
+	}
+
 	switch (code)
 	{
 	case MT_INIT:
 	{
-		auto session = make_shared<Session>(++maxID, m.data);
-		sessions[session->id] = session;
-		Message::send(s, session->id, MR_BROKER, MT_INIT);
+		auto session = make_shared<Session>(++server->maxID, m.data);
+		server->sessions[session->id] = session;
+		session->lastInteractionTime = GetTimeData();
+		session->isConnected = true;
+		string answerFromServer;
+		answerFromServer = "Hello, " + m.data + '\n' + "You was connected" + '\n' + "Your ID: " + to_string(session->id)+'\n';
+		
+		Message::send(s, session->id, MR_BROKER, MT_INIT, answerFromServer);
 		break;
 	}
 	case MT_EXIT:
 	{
-		sessions.erase(m.header.from);
+		server->sessions.erase(m.header.from);
 		Message::send(s, m.header.from, MR_BROKER, MT_CONFIRM);
-		break;
+		Sleep(1500);
+		return;
 	}
 	case MT_GETDATA:
 	{
-		auto iSession = sessions.find(m.header.from);
-		if (iSession != sessions.end())
+		auto iSession = server->sessions.find(m.header.from);
+		if (iSession != server->sessions.end())
 		{
 			iSession->second->send(s);
 		}
@@ -60,46 +71,44 @@ void ProcessClient(SOCKET hSock)
 	}
 	default:
 	{
-		auto iSessionFrom = sessions.find(m.header.from);
-		if (iSessionFrom != sessions.end())
+		if (m.header.to == MR_ALL)
 		{
-			auto iSessionTo = sessions.find(m.header.to);
-			if (iSessionTo != sessions.end())
+			for (auto& [id, session] : server->sessions)
+			{
+				if (id != m.header.from)
+					session->add(m);
+			}
+		} else
+		{ 
+		auto iSessionFrom = server->sessions.find(m.header.from);
+		if (iSessionFrom != server->sessions.end())
+		{
+			auto iSessionTo = server->sessions.find(m.header.to);
+			if (iSessionTo != server->sessions.end())
 			{
 				iSessionTo->second->add(m);
 			}
-			else if (m.header.to == MR_ALL)
+			else
 			{
-				for (auto& [id, session] : sessions)
-				{
-					if (id != m.header.from)
-						session->add(m);
-				}
+				Message response(m.header.from, MR_BROKER, MT_NOTUSER);
+				iSessionFrom->second->add(response);
 			}
+		}
 		}
 		break;
 	}
 	}
-}
-
-void Server()
-{
-	AfxSocketInit();
-
-	CSocket Server;
-	Server.Create(12345);
-
-	while (true)
+	//if (code != MT_GETDATA && code != MT_INIT)
 	{
-		if (!Server.Listen())
-			break;
-
-		CSocket s;
-		Server.Accept(s);
-		thread t(ProcessClient, s.Detach());
-		t.detach();
+		auto SessionFrom = server->sessions.find(m.header.from);
+		if (SessionFrom != server->sessions.end())
+		{
+			SessionFrom->second->lastInteractionTime = GetTimeData();
+			//cout << SessionFrom->second->id << " Last interactin time changed: " << SessionFrom->second->lastInteractionTime;
+		}
 	}
 }
+
 
 CWinApp theApp;
 
@@ -120,7 +129,7 @@ int main()
 		}
 		else
 		{
-			Server();
+			Server server;
 		}
 	}
 	else
