@@ -172,6 +172,7 @@
     <ResourceCompile Include="SocketClient.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\MsgSocketsPython\MsgSockets\SharpClient\SharpClient.csproj" />
     <None Include="SocketClient.aps" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

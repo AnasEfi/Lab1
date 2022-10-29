@@ -52,5 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SocketClient.aps" />
+    <None Include="..\..\MsgSocketsPython\MsgSockets\SharpClient\SharpClient.csproj" />
   </ItemGroup>
 </Project>

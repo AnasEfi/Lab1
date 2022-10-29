@@ -57,7 +57,8 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 	{
 		server->sessions.erase(m.header.from);
 		Message::send(s, m.header.from, MR_BROKER, MT_CONFIRM);
-		Sleep(1500);
+		cout << "User was disconnected" << endl;
+		Sleep(500);
 		return;
 	}
 	case MT_GETDATA:
@@ -98,7 +99,7 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 		break;
 	}
 	}
-	//if (code != MT_GETDATA && code != MT_INIT)
+	if (code != MT_GETDATA && code != MT_INIT)
 	{
 		auto SessionFrom = server->sessions.find(m.header.from);
 		if (SessionFrom != server->sessions.end())
