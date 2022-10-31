@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketClient", "SocketClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpClient", "SharpClient\SharpClient.csproj", "{8E6D40B7-C035-4ACA-B0C6-F7AB6EE7C0D7}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PythonClient", "PythonClient\PythonClient.pyproj", "{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,12 @@ Global
 		{8E6D40B7-C035-4ACA-B0C6-F7AB6EE7C0D7}.Release|x64.Build.0 = Release|Any CPU
 		{8E6D40B7-C035-4ACA-B0C6-F7AB6EE7C0D7}.Release|x86.ActiveCfg = Release|Any CPU
 		{8E6D40B7-C035-4ACA-B0C6-F7AB6EE7C0D7}.Release|x86.Build.0 = Release|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Release|x64.ActiveCfg = Release|Any CPU
+		{73A3BE19-FEBF-4544-9CC9-4FEE8BC91C83}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

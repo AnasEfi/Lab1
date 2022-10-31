@@ -99,7 +99,7 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 		break;
 	}
 	}
-	if (code != MT_GETDATA && code != MT_INIT)
+	//if (code != MT_GETDATA && code != MT_INIT)
 	{
 		auto SessionFrom = server->sessions.find(m.header.from);
 		if (SessionFrom != server->sessions.end())
