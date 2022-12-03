@@ -25,6 +25,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Client.py" />
     <Compile Include="msg.py" />
     <Compile Include="PythonClient.py" />
   </ItemGroup>

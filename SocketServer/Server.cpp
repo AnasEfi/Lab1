@@ -35,7 +35,6 @@ void Server::CheckLastInteraction()
 				SocketServer::GetTimeData() - session->lastInteractionTime > TIMEOUT && session->isConnected == true)
 			{
 				Message exitMsg(id, MR_BROKER, MT_DISCONNECT_USER);
-				cout << "User was disconnected" << endl;
 				session->add(exitMsg);
 				session->isConnected = false;
 			}

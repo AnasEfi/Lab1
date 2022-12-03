@@ -56,7 +56,7 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 	case MT_EXIT:
 	{
 		server->sessions.erase(m.header.from);
-		Message::send(s, m.header.from, MR_BROKER, MT_CONFIRM);
+		Message::send(s, m.header.from, MR_BROKER, MT_CONFIRM,"");
 		cout << "User was disconnected" << endl;
 		Sleep(500);
 		return;
@@ -69,6 +69,14 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 			iSession->second->send(s);
 		}
 		break;
+	}
+	case MT_DISCONNECT_USER:
+	{
+		server->sessions.erase(m.header.from);
+		Message::send(s, m.header.from, MR_BROKER, MT_CONFIRM, "You was disconnected, timeout");
+		cout << "User was disconnected" << endl;
+		Sleep(500);
+		return;
 	}
 	default:
 	{
@@ -99,7 +107,7 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 		break;
 	}
 	}
-	//if (code != MT_GETDATA && code != MT_INIT)
+	if (code != MT_GETDATA && code != MT_INIT)
 	{
 		auto SessionFrom = server->sessions.find(m.header.from);
 		if (SessionFrom != server->sessions.end())

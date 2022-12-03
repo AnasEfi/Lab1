@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 class Client
 {
     public string name;
-    public MessageRecipients ClientID;
-    public bool SUPER_FLAG_IS_DISCONNECTED;
+    public int ClientID;
+    public bool isConnected = false;
 
     public Message send(int to, MessageTypes type = MessageTypes.MT_DATA, string data = "")
     {
@@ -24,7 +24,7 @@ class Client
         {
             throw new Exception("Connection error");
         }
-        var m = new Message((MessageRecipients)to, ClientID, type, data);
+        var m = new Message(to, ClientID, type, data);
 
         m.send(s);
         if (m.receive(s) == MessageTypes.MT_INIT)
@@ -35,8 +35,6 @@ class Client
         {
             m.header.type = MessageTypes.MT_EXIT;
         }
-
-
         return m;
     }
 }

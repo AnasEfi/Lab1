@@ -5,7 +5,7 @@
 Client::Client()
 {
 	clientID = 0;
-	SUPER_FLAG_IS_DISCONNECTED = false;
+	isConnected = false;
 }
 
 string GetLastErrorString(DWORD ErrorID = 0)

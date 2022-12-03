@@ -2,26 +2,19 @@ import threading
 from dataclasses import dataclass
 import socket, struct, time
 from msg import *
+from Client import *
 
-def ProcessMessages():
-		while True:
-			m = SClient.SendMessage(MR_BROKER, MT_GETDATA)
-			if m.Header.Type == MT_DATA:
-				print(m.Data)
-			if m.Header.Type == MT_NOUSER:
-				print("User not found")
-			else:
-				time.sleep(1)
-
-def connection_client(new_client):
+def connection_client():
 
 		print ("Input your name: ", end='')
 		name = input()
+		new_client = SClient();
 		m = new_client.SendMessage(MR_BROKER, MT_INIT,name)
 		if m.Header.Type == MT_INIT:
 			print(f"\n{m.Data}")
+			new_client.is_connected = True
 
-		t = threading.Thread(target=ProcessMessages)
+		t = threading.Thread(target=ProcessMessages,args = (new_client,))
 		t.start()
 		while True:
 			message = input()
@@ -31,42 +24,28 @@ def connection_client(new_client):
 				case "Send":
 					data=""
 					to = message[1]
-					for sym in message:
-						if sym == message[-1]:
-							data = data + sym 
-						else: data = data + sym + " "
+
+					c = 2
+					while c < len(message):
+						data += message[c] + " "
+						c += 1
+
 					new_client.SendMessage(to, MT_DATA,data)
 				case "All":
 					data=""
-					for sym in message:
-						if sym == message[-1]:
-							data = data + sym 
-						else: data = data + sym + " "
+					c = 1
+					while c < len(message):
+						data += message[c] + " "
+						c += 1
 					new_client.SendMessage(MR_ALL, MT_DATA, data)
+				case "Exit":
+					m=new_client.SendMessage(MR_BROKER,MT_EXIT,"")
+					if m.Header.Type == MT_CONFIRM:
+						new_client.is_connected = False
+						print ("You was disconnected")
 				case _:
 					print ("Underfined")
 		
 
-
-
-class SClient:
-	def __init__(self):
-		self.ClientID = 0
-		self.name="";
-
-	def SendMessage(self, To, Type = MT_DATA, Data=""):
-		HOST = 'localhost'
-		PORT = 12345
-		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-			s.connect((HOST, PORT))
-			m = Message(To, self.ClientID, Type, Data)
-			m.Send(s)
-			m.Receive(s)
-			if m.Header.Type == MT_INIT:
-				self.ClientID = m.Header.To
-			return m
-
-
 if __name__ == "__main__":
-	new_client = SClient()
-	connection_client(new_client)
+	connection_client()

@@ -32,7 +32,7 @@ void ProcessMessages(Client NewClient)
 		{
 			cout << "Timeout, you was disconnected" << endl;
 			Message m = NewClient.send(MR_BROKER, MT_EXIT,"");
-			NewClient.SUPER_FLAG_IS_DISCONNECTED = true;
+			NewClient.isConnected = true;
 			Sleep(1000);
 			return;
 		}
@@ -64,7 +64,7 @@ void ConnectClient(Client NewClient)
 		getline(cin, str);//ïðîâåðêà íà npos
 
 		// ÏÐÎÂÅÐÈÒÜ, ×ÒÎ ÔËÀÆÎÊ ÏÎÄÊËÞ×ÅÍÈß Â TRUE
-		if (NewClient.SUPER_FLAG_IS_DISCONNECTED)
+		if (NewClient.isConnected)
 			return;
 		command = str.substr(0, str.find_first_of(' '));//ïîèñê êîìàíäû â ñîîáùåíèè ïîëüçîâàòåëÿ
 

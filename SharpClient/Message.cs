@@ -31,9 +31,9 @@ public enum MessageRecipients : int
 struct MessageHeader
 {
     [MarshalAs(UnmanagedType.I4)]
-    public MessageRecipients to;
+    public int to;
     [MarshalAs(UnmanagedType.I4)]
-    public MessageRecipients from;
+    public int from;
     [MarshalAs(UnmanagedType.I4)]
     public MessageTypes type;
     [MarshalAs(UnmanagedType.I4)]
@@ -55,9 +55,7 @@ class Message
         }
         return cp866;
     }
-
-
-    public Message(MessageRecipients to, MessageRecipients from, MessageTypes type = MessageTypes.MT_DATA, string data = "")
+    public Message(int to, int from, MessageTypes type = MessageTypes.MT_DATA, string data = "")
     {
         this.data = data;
         header = new MessageHeader() { to = to, from = from, type = type, size = data.Length };
@@ -88,7 +86,6 @@ class Message
         Marshal.FreeHGlobal(i);
         return data;
     }
-
     public MessageTypes receive(Socket s)
     {
         byte[] buff = new byte[Marshal.SizeOf(header)];
@@ -107,7 +104,7 @@ class Message
         return header.type;
     }
 
-    public static void send(Socket s, MessageRecipients to, MessageRecipients from, MessageTypes type = MessageTypes.MT_DATA, string data = "")
+    public static void send(Socket s, int to, int from, MessageTypes type = MessageTypes.MT_DATA, string data = "")
     {
         new Message(to, from, type, data).send(s);
 

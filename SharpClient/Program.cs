@@ -22,15 +22,14 @@ class Program
         {
             Console.WriteLine("Error in name!");
         }
+        client.isConnected = true;
         Console.WriteLine(m.data);
 
         Thread t = new Thread(() => ProcessMessages(client));
         t.Start();
 
-        while (true)
+        while (client.isConnected)
         {
-            if (client.SUPER_FLAG_IS_DISCONNECTED)
-                return;
             var s = Console.ReadLine();
             if (s != null)
             {
@@ -68,7 +67,6 @@ class Program
                             Console.WriteLine("Wrong command!");
                             break;
                     }
-
                 }
                 else
                 {
@@ -76,7 +74,7 @@ class Program
                     if (mFromServer.header.type == MessageTypes.MT_CONFIRM)
                     {
                         Console.WriteLine("You was disconnected");
-                        client.SUPER_FLAG_IS_DISCONNECTED = true;
+                        client.isConnected = false;
                         Thread.Sleep(1000);
                         return;
                     }
@@ -86,39 +84,34 @@ class Program
     }
     static void ProcessMessages(Client currentClient)
     {
-        while (true)
+        while (currentClient.isConnected)
         {
-            if (currentClient.SUPER_FLAG_IS_DISCONNECTED != true)
+            Thread.Sleep(1000);
+            var m = currentClient.send((int)MessageRecipients.MR_BROKER, MessageTypes.MT_GETDATA);
+            switch (m.header.type)
             {
-                Thread.Sleep(1000);
-                var m = currentClient.send((int)MessageRecipients.MR_BROKER, MessageTypes.MT_GETDATA);
-                switch (m.header.type)
-                {
 
-                    case MessageTypes.MT_DATA:
-                        Console.WriteLine(m.data);
-                        break;
-                    case MessageTypes.MT_NOTUSER:
-                        Console.WriteLine("No user found");
-                        break;
-                    case MessageTypes.MT_DISCONNECT_USER:
-                        {
-                            Console.WriteLine("Timeout, you was disconnected");
-                            currentClient.send((int)MessageRecipients.MR_BROKER, MessageTypes.MT_EXIT, "");
-                            currentClient.SUPER_FLAG_IS_DISCONNECTED = true;
-                            Thread.Sleep(1000);
-                            return;
-                        }
-                    case MessageTypes.MT_CONFIRM:
+                case MessageTypes.MT_DATA:
+                    Console.WriteLine(m.data);
+                    break;
+                case MessageTypes.MT_NOTUSER:
+                    Console.WriteLine("No user found");
+                    break;
+                case MessageTypes.MT_DISCONNECT_USER:
+                    {
+                        Console.WriteLine("Timeout, you was disconnected");
+                        currentClient.send((int)MessageRecipients.MR_BROKER, MessageTypes.MT_EXIT, "");
+                        currentClient.isConnected = true;
+                        Thread.Sleep(1000);
                         return;
-                    default:
-                        Thread.Sleep(100);
-                        break;
-                }
+                    }
+                case MessageTypes.MT_CONFIRM:
+                    return;
+                default:
+                    Thread.Sleep(100);
+                    break;
             }
-            else return;
         }
-
     }
 }
 

@@ -10,7 +10,7 @@
 class Server
 {
 public:
-	static const long long TIMEOUT = 30;
+	static const long long TIMEOUT = 300;
 	int maxID = MR_USER;
 	map<int, shared_ptr<Session>> sessions;
 	void CheckLastInteraction();

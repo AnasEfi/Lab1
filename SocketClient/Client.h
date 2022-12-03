@@ -11,7 +11,7 @@ class Client
 public:
 	int clientID;
 	string name;
-	bool SUPER_FLAG_IS_DISCONNECTED = false;
+	bool isConnected = false;
 	Message send(int to, int type, const string& data);
 	Client();
 };
