@@ -34,6 +34,7 @@ public:
 		else
 		{
 			Message m = messages.front();
+
 			string dataFromQueue = "Message from [" + to_string(m.header.from) + "]: " + m.data;
 			m.data = dataFromQueue;
 			m.header.size = dataFromQueue.size();

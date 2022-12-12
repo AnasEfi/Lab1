@@ -30,6 +30,7 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 
 	cout << m.header.to << ": " << m.header.from << ": " << m.header.type << ": " << code << endl;
 
+
 	auto iSessionFrom = server->sessions.find(m.header.from);
 	if (iSessionFrom != server->sessions.end())
 	{
@@ -78,6 +79,19 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 		Sleep(500);
 		return;
 	}
+	case STORAGE_INIT:
+	{
+		auto session = make_shared<Session>(++server->maxID, m.data);
+		server->storageID = session->id;
+		server->sessions[session->id] = session;
+		
+		session->isConnected = true;
+		string answerFromServer;
+		answerFromServer = "Storage server was connected with ID: " + to_string(session->id) + '\n';
+		server->storageID = session->id; 
+		Message::send(s, session->id, MR_BROKER, MT_INIT, answerFromServer);
+		break;
+	}
 	default:
 	{
 		if (m.header.to == MR_ALL)
@@ -85,17 +99,23 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 			for (auto& [id, session] : server->sessions)
 			{
 				if (id != m.header.from)
+				{
 					session->add(m);
+					server->sessions[server->storageID]->add(m);
+				}
 			}
 		} else
 		{ 
+		auto SessionOfStorage = server->sessions.find(server->storageID);
 		auto iSessionFrom = server->sessions.find(m.header.from);
 		if (iSessionFrom != server->sessions.end())
 		{
 			auto iSessionTo = server->sessions.find(m.header.to);
 			if (iSessionTo != server->sessions.end())
 			{
+				Message toStorage = m;
 				iSessionTo->second->add(m);
+				SessionOfStorage->second->add(toStorage); // add to storage
 			}
 			else
 			{
@@ -113,7 +133,6 @@ void SocketServer::ProcessClient(SOCKET hSock, Server* server)
 		if (SessionFrom != server->sessions.end())
 		{
 			SessionFrom->second->lastInteractionTime = GetTimeData();
-			//cout << SessionFrom->second->id << " Last interactin time changed: " << SessionFrom->second->lastInteractionTime;
 		}
 	}
 }

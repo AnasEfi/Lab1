@@ -1,7 +1,5 @@
-import threading
 from dataclasses import dataclass
 import socket, struct, time
-from msg import *
 
 MT_INIT	= 0
 MT_EXIT	= 1
@@ -16,6 +14,7 @@ STORAGE_INIT = 8
 MR_BROKER = 10
 MR_ALL = 50
 MR_USER	= 100
+
 
 
 @dataclass
@@ -51,5 +50,6 @@ class Message:
 		if self.Header.Size > 0:
 			self.Data = struct.unpack(f'{self.Header.Size}s', s.recv(self.Header.Size))[0].decode('cp866')
 
-	
+
+
 

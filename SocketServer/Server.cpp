@@ -22,6 +22,7 @@ Server::Server()
 		thread t(&SocketServer::ProcessClient, ServerSocket, s.Detach(), this);
 		t.detach();
 	}
+
 }
 
 
@@ -31,12 +32,15 @@ void Server::CheckLastInteraction()
 	{
 		for (auto& [id, session] : sessions)
 		{
-			if (session != nullptr && 
-				SocketServer::GetTimeData() - session->lastInteractionTime > TIMEOUT && session->isConnected == true)
+			if (id != storageID)
 			{
-				Message exitMsg(id, MR_BROKER, MT_DISCONNECT_USER);
-				session->add(exitMsg);
-				session->isConnected = false;
+				if (session != nullptr &&
+					SocketServer::GetTimeData() - session->lastInteractionTime > TIMEOUT && session->isConnected == true)
+				{
+					Message exitMsg(id, MR_BROKER, MT_DISCONNECT_USER);
+					session->add(exitMsg);
+					session->isConnected = false;
+				}
 			}
 		}
 		Sleep(3 * 1000);
