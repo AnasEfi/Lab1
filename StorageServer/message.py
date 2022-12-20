@@ -1,3 +1,4 @@
+import pickle
 from dataclasses import dataclass
 import socket, struct, time
 
@@ -10,9 +11,14 @@ MT_CONFIRM = 5
 MT_NOUSER = 6
 MT_DISCONNECT_USER = 7
 STORAGE_INIT = 8
+MT_GETDATA_WITH_OFFSET = 9
+MT_CONNECT_ERROR = 10
+MT_NO_FOUND_MESSAGE = 11
+MT_AUTH_ERROR = 12
 
 MR_BROKER = 10
 MR_ALL = 50
+MR_STORAGE = 80
 MR_USER	= 100
 
 
@@ -35,6 +41,8 @@ class MsgHeader:
 			self.Type = MT_NODATA
 
 class Message:
+
+	MessegesList = []
 	
 	def __init__(self, To = 0, From = 0, Type = MT_DATA, Data=""):
 		self.Header = MsgHeader(To, From, Type, len(Data))
@@ -49,6 +57,33 @@ class Message:
 		self.Header.Receive(s)
 		if self.Header.Size > 0:
 			self.Data = struct.unpack(f'{self.Header.Size}s', s.recv(self.Header.Size))[0].decode('cp866')
+
+	def findMessage(userIdx : int, offset : int = 0):
+		counter = 0
+		for msg in Message.MessegesList[::-1]:
+			if msg.Header.From == userIdx or msg.Header.To == userIdx or msg.Header.To == MR_ALL:
+				if counter != offset:
+					# Считаем до offset'a, если нужно предпоследнее сообщение, то offset = 1
+					# counter пропустит первую итерацию цикла и станет +1, то есть counter будет равен 1
+					# на следующей удачной итерации counter уже будет равен offset и вот это сообщение то мы и вернем
+					counter += 1 
+					continue
+				return msg
+		return None
+
+	def load():
+		try:
+			with open('StoreMessageDB.db', 'rb') as f:
+				Message.MessegesList = pickle.load(f)
+		except FileNotFoundError:
+				pass
+
+	def store(items):
+		with open('StoreMessageDB.db', 'wb') as f:
+			pickle.dump(items, f)
+
+	
+	
 
 
 

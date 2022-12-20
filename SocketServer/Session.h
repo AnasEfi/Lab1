@@ -37,6 +37,8 @@ public:
 
 			string dataFromQueue = "Message from [" + to_string(m.header.from) + "]: " + m.data;
 			m.data = dataFromQueue;
+			if (m.header.type == MT_DATA_WITH_RESPONSE)
+				m.header.type = MT_DATA;
 			m.header.size = dataFromQueue.size();
 			m.send(s);
 			messages.pop();

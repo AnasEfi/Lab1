@@ -1,8 +1,20 @@
-import cgi, pickle
+
 from os import name
-from StorageServer import ProcessMessages, StorageServer
+from StorageServer import ProcessMessages, StorageServer, ProcessRequest
 from message import *
-import threading
+import threading 
+
+
+def StartStorageServerSocket():
+	HOST = '127.0.0.1'
+	PORT = 50007
+	while True:
+		with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+			s.bind ((HOST,PORT))
+			s.listen()
+			conn, addr = s.accept()
+			serverThread = threading.Thread(target=ProcessRequest,args = (conn,addr, ))
+			serverThread.start()
 
 def connection_storage():
 
@@ -14,37 +26,13 @@ def connection_storage():
 			print(f"\n{m.Data}")
 			new_client.is_connected = True
 
-		t = threading.Thread(target = ProcessMessages,args = (new_client,))
+		Message.load() #loading database
+		print ('Database download! Theare are {} message in a base'.format(len(Message.MessegesList)))
+
+		t = threading.Thread(target = ProcessMessages,args = (new_client,)) # thread to send message to MessageServer 
 		t.start()
-		while True:
-			message = input()
-			message = message.split(" ");
-			command = message[0]
-			match command:
-				case "Send":
-					data=""
-					to = message[1]
-					c = 2
-					while c < len(message):
-						data += message[c] + " "
-						c += 1
-					new_client.SendMessage(to, MT_DATA,data)
 
-				case "All":
-					data=""
-					c = 1
-					while c < len(message):
-						data += message[c] + " "
-						c += 1
-					new_client.SendMessage(MR_ALL, MT_DATA, data)
-				case "Exit":
-					m=new_client.SendMessage(MR_BROKER,MT_EXIT,"")
-					if m.Header.Type == MT_CONFIRM:
-						new_client.is_connected = False
-						print ("You was disconnected")
-				case _:
-					print ("Underfined")
-
+		StartStorageServerSocket() # socket to get messages from MessageServer
 
 if __name__ == "__main__":
 	connection_storage()
